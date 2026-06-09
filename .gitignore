@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# temp files created by scripts/build-static.mjs
+*.export-bak
+
 # production
 /build
 

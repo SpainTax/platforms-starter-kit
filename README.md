@@ -88,3 +88,40 @@ For custom domains, make sure to:
 
 1. Add your root domain to Vercel
 2. Set up a wildcard DNS record (`*.yourdomain.com`) on Vercel
+
+### GitHub Pages (static preview)
+
+A read-only **static preview** can be hosted for free on GitHub Pages — useful
+for showcasing the UI without provisioning a server or Redis.
+
+To enable it:
+
+1. In your repository, go to **Settings → Pages** and set **Source** to
+   **GitHub Actions**.
+2. Push to `main` (or run the **Deploy to GitHub Pages** workflow manually from
+   the **Actions** tab). The site is published at
+   `https://<your-username>.github.io/<repo-name>/`.
+
+How it works (see [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)
+and [`scripts/build-static.mjs`](scripts/build-static.mjs)):
+
+- `pnpm build:static` produces a static export (`output: 'export'`) into `out/`.
+- The repository name is used as the Next.js `basePath` so assets resolve under
+  the Pages sub-path.
+- Server-only features can't run on a static host, so for this build the
+  middleware (subdomain routing) is skipped and the Server Actions are swapped
+  for client-safe stubs (`app/actions.static.ts`). When the Upstash Redis
+  environment variables are absent, `lib/redis.ts` falls back to an in-memory
+  store seeded with a few demo tenants.
+
+Because of those limitations the GitHub Pages build is a **preview only** —
+creating/deleting subdomains and live subdomain routing require the full Vercel
+deployment described above.
+
+You can reproduce the static build locally:
+
+```bash
+BASE_PATH="/your-repo-name" pnpm build:static
+# serve the output, e.g.:
+npx serve out
+```
