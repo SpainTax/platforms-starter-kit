@@ -1,8 +1,16 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getSubdomainData } from '@/lib/subdomains';
+import { getSubdomainData, getAllSubdomains } from '@/lib/subdomains';
 import { protocol, rootDomain } from '@/lib/utils';
+
+// Pre-render a page for every known subdomain. This is required for the
+// static export used by the GitHub Pages preview; on a server (e.g. Vercel)
+// these simply act as pre-rendered entries.
+export async function generateStaticParams() {
+  const subdomains = await getAllSubdomains();
+  return subdomains.map(({ subdomain }) => ({ subdomain }));
+}
 
 export async function generateMetadata({
   params
